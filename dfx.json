@@ -1,0 +1,28 @@
+{
+  "canisters": {
+    "conversion_library_backend": {
+      "main": "src/conversion_library_backend/main.mo",
+      "type": "motoko"
+    },
+    "conversion_library_frontend": {
+      "dependencies": [
+        "conversion_library_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/conversion_library_frontend/src/index.html"
+      },
+      "source": [
+        "src/conversion_library_frontend/assets",
+        "dist/conversion_library_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "version": 1
+}
