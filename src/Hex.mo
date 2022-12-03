@@ -38,7 +38,6 @@ module {
    */
   public func encode(array : [Nat8]) : Text {
     let encoded = Array.foldLeft<Nat8, Text>(array, "", func (accum, w8) {
-      Debug.print("accum "#debug_show(accum#encodeW8(w8))#"\n");
       accum # encodeW8(w8);
     });
     // encode as lowercase
