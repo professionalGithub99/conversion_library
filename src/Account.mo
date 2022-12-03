@@ -1,6 +1,8 @@
 import CRC32     "./CRC32";
 import SHA224    "./SHA224";
+import Hex "./Hex";
 import Ledger "canister:ledger";
+import Result "mo:base/Result";
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import Buffer "mo:base/Buffer";
@@ -13,6 +15,8 @@ module
 {       
 public type AccountIdentifier = Ledger.AccountIdentifier;
 public type SubAccount = Ledger.SubAccount;
+public type DecodeError = Hex.DecodeError;
+
   public func beBytes(n:Nat32):[Nat8] {
         func byte(n : Nat32) : Nat8 {
       Nat8.fromNat(Nat32.toNat(n & 0xff))
@@ -22,6 +26,28 @@ public type SubAccount = Ledger.SubAccount;
   public func defaultSubaccount() : SubAccount {
     Blob.fromArrayMut(Array.init(32, 0 : Nat8))
   };
+
+public func accountIdTextToNat8Array(accountIdText:Text):async Result.Result<[Nat8],DecodeError> {
+  return Hex.decode(accountIdText);
+};
+public func accountIdTextToBlob(accountIdText:Text):async Result.Result<Blob,DecodeError> {
+  var decodedText = Hex.decode(accountIdText);
+  switch(decodedText) {
+    case (#ok accountIdNat8) {
+      return #ok(Blob.fromArray(accountIdNat8));
+    };
+    case (#err err) {
+      return #err(err);
+    };
+  };
+}; 
+
+public func accountIdNat8ArrayToText(accountIdNat8Array:[Nat8]):async Text {
+  return Hex.encode(accountIdNat8Array);
+};
+public func accountIdBlobToText(accountIdBlob:Blob):async Text {
+ return Hex.encode(Blob.toArray(accountIdBlob));
+};
 
   public func accountIdentifier(principal: Principal, subaccount:SubAccount):AccountIdentifier{
     //account identifier account_identifier(principal,subaccount_identifier) = CRC32(h) || h

@@ -1,4 +1,7 @@
 import Hex "../Hex";
+import Nat "mo:base/Nat";
+import Nat64 "mo:base/Nat64";
+import Utils "./Utils";
 import Account "../Account";
 import Array "mo:base/Array";
 import Debug "mo:base/Debug";
@@ -6,23 +9,39 @@ import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Blob "mo:base/Blob";
 import Ledger "canister:ledger";
+import Map "mo:hashmap/Map";
+import Principal "mo:base/Principal";
+
 actor {
 public type Result<Ok,Err> = Result.Result<Ok, Err>;
 public type DecodeError = Hex.DecodeError;
+let {phash} = Map;
+let map1 = Map.new<Principal,Nat64>();
 
 
-public shared({caller}) func accountIdentifier():async Account.AccountIdentifier {
-  return Account.accountIdentifier(caller,Account.defaultSubaccount());
+
+public shared({caller}) func getFromMap():async ?Nat64{
+  var getFromMap = Map.get(map1,phash,caller);
+  return getFromMap;
 };
 
-public shared({caller}) func accountIdTextToNat8Array(accountIdText:Text):async Result<[Nat8],DecodeError> {
-  return Hex.decode(accountIdText);
+public shared({caller}) func removeOrSet(_nat64:Nat64):async ?Nat64{
+  return Utils.remove_or_put<Principal,Nat64>(Utils.isZeroNat64,map1,phash,caller,_nat64);
 };
 
-public shared({caller}) func accountIdNat8ArrayToText(accountIdNat8Array:[Nat8]):async Text {
-  return Hex.encode(accountIdNat8Array);
+public shared({caller}) func accountIdentifier(_subaccount:?Blob):async Account.AccountIdentifier {
+  switch(_subaccount) {
+    case (?subaccount) {
+      return Account.accountIdentifier(caller, subaccount);
+    };
+    case (_){
+    return Account.accountIdentifier(caller,Account.defaultSubaccount());
+    };
+  };
 };
 
+
+//USE THIS ONE FOR LEDGER
 // This function iterates through pairs of characters in the text string, converts the char pair to the decimal value of the hex it represents and then converts that value to a Nat8 decimal, i.e. 12 = 18, 0a = 10, 61 = 97. It then puts that decimal value into a nat8 Array. An example inputting 120a35 = a nat8 vector of values [12 = 18, 0a = 10, 30 = 48]. Note these steps are abstracted away in Hex.decode. The return values printed when calling in terminal are shown as the hex for each blob/Nat8Array element. I.e. for [12,0a] we get "\12\0a". There is a special case of char pairs I left out. It seems if the char pair has an ascii character with the decimal value of it (the common ones A-Z,a-z, 0-9, and a few more), i.e. 35 = "\35" = '0', then what is shown in the blob is 0. So 120a35 = [12 = 18, 0a = 10, 30 = 48 ='0'] = "\12\0a\0"
 //note, ascii chars made of multiple char pairs will not be outputted as a char like the € will be outputted as \e2\82\ac, due to the way Hex.Decode works. See the inner workings if you must.
 // note this function requires you to have chars that fit hex digits and that the string is even in length
@@ -44,6 +63,7 @@ public shared({caller}) func accountIdNat8ArrayToText(accountIdNat8Array:[Nat8])
   };
 
 
+//USE THIS ONE FOR LEDGER
 //BlobToText and Nat8ArrayToText are the same function essentially since candid and nat8 and blob types. 
 //This function(s) is essentially opposite of TextToNat8Array. It It takes a blob and iterates through each element, either as a \<charpair as hex> or an individual char. It takes that char or \<charpair as hex> and converts it into a decimal. For each decimal, it converts that number into hexidecimal. And then concatenates the first and second digit of that hex into a string. It does that for every \<charpair as hex> and individual char in the blob.
   public func blobToText(_blob: Blob) : async Text {
@@ -63,5 +83,8 @@ public shared({caller}) func accountIdNat8ArrayToText(accountIdNat8Array:[Nat8])
   //This function is essentially the opposite of the encodeutf8. It takes a blob and iterates through each element, either as a \<charpair as hex> or an individual char. It takes that char or \<charpair as hex> and converts it into a decimal. I.e. blob "\67\\\5c\e2\82\ac€" has decimals of \67 = 103 \\ = 92, \5c = 92, \e2\82\ac = 14844588, € = 14844588. It then finds the the text char with that decimal and spits it out. If there is no char fitting that value you just get a null. For this output you get \67 = 103 = g, \\ = 92 = \\ (note it actaully only equals one \ but the escape char), \5c = 92 = \\ (same here since \5c is the \\ char and you get same output), \e2\82\ac = 14844588 = €, € = 14844588 = €. Our final output is a text of all the chars after the 2nd equal signs "g\\\\€€"
   public func blobToTextUtf8Decode(_blob: Blob) : async ?Text {
     return Text.decodeUtf8(_blob);
+  };
+  public func blobToSubaccount(_blob:Blob):async (Account.SubAccount,Nat,Nat) {
+    return (Account.blobToSubaccount(_blob),_blob.size(),Account.blobToSubaccount(_blob).size());
   };
 };
