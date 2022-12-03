@@ -27,10 +27,10 @@ public type DecodeError = Hex.DecodeError;
     Blob.fromArrayMut(Array.init(32, 0 : Nat8))
   };
 
-public func accountIdTextToNat8Array(accountIdText:Text):async Result.Result<[Nat8],DecodeError> {
+public func accountIdTextToNat8Array(accountIdText:Text):Result.Result<[Nat8],DecodeError> {
   return Hex.decode(accountIdText);
 };
-public func accountIdTextToBlob(accountIdText:Text):async Result.Result<Blob,DecodeError> {
+public func accountIdTextToBlob(accountIdText:Text):Result.Result<Blob,DecodeError> {
   var decodedText = Hex.decode(accountIdText);
   switch(decodedText) {
     case (#ok accountIdNat8) {
@@ -42,10 +42,10 @@ public func accountIdTextToBlob(accountIdText:Text):async Result.Result<Blob,Dec
   };
 }; 
 
-public func accountIdNat8ArrayToText(accountIdNat8Array:[Nat8]):async Text {
+public func accountIdNat8ArrayToText(accountIdNat8Array:[Nat8]):Text {
   return Hex.encode(accountIdNat8Array);
 };
-public func accountIdBlobToText(accountIdBlob:Blob):async Text {
+public func accountIdBlobToText(accountIdBlob:Blob):Text {
  return Hex.encode(Blob.toArray(accountIdBlob));
 };
 
