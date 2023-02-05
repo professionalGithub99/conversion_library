@@ -1,6 +1,6 @@
 {
   "canisters": {
-    "ledger":{
+    "nns-ledger":{
       "type":"custom",
       "wasm":"src/ledger/ledger.wasm",
       "candid":"src/ledger/ledger.did",
@@ -14,7 +14,7 @@
     "test":{
       "main":"src/test/main.mo",
       "type":"motoko",
-      "dependencies":["ledger"]
+      "dependencies":["nns-ledger"]
     }
   },
   "defaults": {

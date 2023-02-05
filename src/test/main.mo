@@ -8,7 +8,7 @@ import Debug "mo:base/Debug";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Blob "mo:base/Blob";
-import Ledger "canister:ledger";
+import Ledger "canister:nns-ledger";
 import Map "mo:hashmap/Map";
 import Principal "mo:base/Principal";
 

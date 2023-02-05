@@ -1,7 +1,7 @@
 import CRC32     "./CRC32";
 import SHA224    "./SHA224";
 import Hex "./Hex";
-import Ledger "canister:ledger";
+import Ledger "canister:nns-ledger";
 import Result "mo:base/Result";
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
